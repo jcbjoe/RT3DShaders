@@ -72,7 +72,12 @@ SamplerState g_sampler;
 // The vertex shader entry point. This function takes a single vertex and transforms it for the rasteriser.
 void VSMain(const VSInput input, out PSInput output)
 {
-	output.pos = mul(input.pos, g_WVP);
+
+	float y = input.pos.y + sin(input.pos.y + (g_frameCount / 4));
+
+	float4 newPos = { input.pos.x,  y, input.pos.z, input.pos.w};
+
+	output.pos = mul(newPos, g_WVP);
 	output.colour = input.colour;
 }
 

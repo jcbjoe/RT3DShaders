@@ -79,10 +79,27 @@ void VSMain(const VSInput input, out PSInput output)
 
 	output.pos = mul(newPos, g_WVP);
 	output.colour = input.colour;
+	output.normal = input.normal;
 }
+
+//	float4 g_lightDirections[MAX_NUM_LIGHTS];
+//float3 g_lightColours[MAX_NUM_LIGHTS];
 
 // The pixel shader entry point. This function writes out the fragment/pixel colour.
 void PSMain(const PSInput input, out PSOutput output)
 {
-	output.colour = input.colour;	// 'return' the colour value for this fragment.
+
+	float3 EndColour;
+
+	for (int i = 0; i < g_numLights; i++)
+	{
+		float4 dir = g_lightDirections[i];
+		float3 colour = g_lightColours[i];
+
+		float intensity = cos(dot(input.normal, dir));
+
+		EndColour = colour * intensity;
+	}
+
+	output.colour = float4(EndColour.r, EndColour.g, EndColour.b, 1);
 }

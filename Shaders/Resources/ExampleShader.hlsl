@@ -77,8 +77,19 @@ void VSMain(const VSInput input, out PSInput output)
 
 	float4 newPos = { input.pos.x,  y, input.pos.z, input.pos.w};
 
+	float2 pos = input.pos.xz;
+
+	pos.x += 512;
+	pos.x /= 1024;
+	pos.y += 512;
+	pos.y /= 1024;
+
+	pos.y = 1 - pos.y;
+
+	float4 colour = g_materialMap.SampleLevel(g_sampler, pos, 0);
+
 	output.pos = mul(newPos, g_WVP);
-	output.colour = input.colour;
+	output.colour = colour;
 	output.normal = input.normal;
 }
 
@@ -93,13 +104,17 @@ void PSMain(const PSInput input, out PSOutput output)
 
 	for (int i = 0; i < g_numLights; i++)
 	{
-		float4 dir = g_lightDirections[i];
+		float3 dir = g_lightDirections[i].xyz;
 		float3 colour = g_lightColours[i];
 
 		float intensity = cos(dot(input.normal, dir));
 
-		EndColour = colour * intensity;
+		EndColour += colour * intensity;
 	}
 
-	output.colour = float4(EndColour.r, EndColour.g, EndColour.b, 1);
+	EndColour /= g_numLights;
+
+	float4 RealColour = float4(EndColour.r, EndColour.g, EndColour.b, 1) * input.colour;
+
+	output.colour = RealColour;
 }

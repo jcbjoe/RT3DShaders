@@ -91,6 +91,7 @@ void VSMain(const VSInput input, out PSInput output)
 	output.pos = mul(newPos, g_WVP);
 	output.colour = colour;
 	output.normal = input.normal;
+	output.tex = input.tex;
 }
 
 //	float4 g_lightDirections[MAX_NUM_LIGHTS];
@@ -99,6 +100,19 @@ void VSMain(const VSInput input, out PSInput output)
 // The pixel shader entry point. This function writes out the fragment/pixel colour.
 void PSMain(const PSInput input, out PSOutput output)
 {
+	 
+	float mossIntensity = input.colour.r;
+	float grassIntensity = input.colour.g;
+	float asphaltIntensity = input.colour.b;
+
+	float4 pixelColour = { 0,0,0,1 };
+
+	pixelColour = lerp(pixelColour, g_texture0.Sample(g_sampler, input.tex), mossIntensity);
+
+	pixelColour = lerp(pixelColour, g_texture1.Sample(g_sampler, input.tex), grassIntensity);
+
+	pixelColour = lerp(pixelColour, g_texture2.Sample(g_sampler, input.tex), asphaltIntensity);
+
 
 	float3 EndColour;
 
@@ -114,7 +128,7 @@ void PSMain(const PSInput input, out PSOutput output)
 
 	EndColour /= g_numLights;
 
-	float4 RealColour = float4(EndColour.r, EndColour.g, EndColour.b, 1) * input.colour;
+	float4 RealColour = float4(EndColour.r, EndColour.g, EndColour.b, 1) * pixelColour;
 
 	output.colour = RealColour;
 }
